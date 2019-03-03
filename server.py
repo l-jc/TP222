@@ -1,19 +1,37 @@
-import socket
+# import socket
 
-HOST = ""
-PORT = 65001
+# HOST = ""
+# PORT = 65001
+#
+# sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# sock.bind((HOST, PORT))
+#
+# content = b""
+#
+# try:
+#     while True:
+#         data, addr = sock.recvfrom(4096)
+#         content += data
+#         print(data[:2])
+# except KeyboardInterrupt:
+#     open("receive.txt", 'wb').write(content)
+#
+# sock.close()
+#
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind((HOST, PORT))
+import RealTimeSocket
 
-content = b""
+LOCALHOST = "127.0.0.1"
 
-try:
-    while True:
-        data, addr = sock.recvfrom(4096)
-        content += data
-except KeyboardInterrupt:
-    open("receive.txt", 'wb').write(content)
 
-sock.close()
+def main():
+    sock = RealTimeSocket.RealTimeSocket(LOCALHOST, 9999)
+    data = open("big.txt", 'rb').read()
 
+    sock.send(data)
+
+    sock.close()
+
+
+if __name__ == '__main__':
+    main()
