@@ -15,20 +15,11 @@ import RealTimeSocket
 import time
 
 LOCALHOST = "127.0.0.1"
+MUMBAI = "13.233.94.35"
 
 
 def main():
-    sock = RealTimeSocket.RealTimeSocket(LOCALHOST, 9998)
-
-    sock.bind(9999)
-    t = time.time()
-    buff = sock.recv(0.2)
-    print(f"received {time.time() - t}")
-
-    if buff:
-        open("receive.txt", "wb").write(buff)
-
-    sock.close()
+    pass
 
 
 if __name__ == "__main__":

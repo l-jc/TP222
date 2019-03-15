@@ -22,16 +22,11 @@
 import RealTimeSocket
 
 LOCALHOST = "127.0.0.1"
+MUMBAI = "13.233.94.35"
 
 
 def main():
-    sock = RealTimeSocket.RealTimeSocket(LOCALHOST, 9999)
-    data = open("big.txt", 'rb').read()
-
-    sock.send(data)
-
-    sock.close()
-
+    pass
 
 if __name__ == '__main__':
     main()
