@@ -12,14 +12,18 @@
 
 
 import RealTimeSocket
-import time
 
 LOCALHOST = "127.0.0.1"
 MUMBAI = "13.233.94.35"
 
 
 def main():
-    pass
+    sock = RealTimeSocket.Dragon()
+    sock.connect((MUMBAI, 6000))
+
+    sock.send(b'Hello world!')
+
+    sock.close()
 
 
 if __name__ == "__main__":

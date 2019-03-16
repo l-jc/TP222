@@ -26,7 +26,13 @@ MUMBAI = "13.233.94.35"
 
 
 def main():
-    pass
+    sock = RealTimeSocket.Dragon()
+    ip, port = sock.accept()
+
+    data = sock.recv(1024)
+
+    print(data)
+
 
 if __name__ == '__main__':
     main()
