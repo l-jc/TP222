@@ -35,9 +35,10 @@ class ReceivingProcess(threading.Thread):
         pass
 
 
-class Dragon():
+class Dragon:
     remote_addr = None
     remote_port = None
+
     def __init__(self):
         """
         sending buffer
@@ -49,7 +50,7 @@ class Dragon():
         self.send_routine = SendingProcess()
         self.recv_buffer = buffer.RecvBuffer()
         self.recv_routine = ReceivingProcess()
-        pass
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def connect(self, addr: tuple):
         """

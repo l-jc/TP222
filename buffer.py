@@ -2,7 +2,7 @@ class Buffer:
     def __init__(self):
         # start and end seq number
         self.content = bytearray(0)
-        self.start = 0 # what should be the initial value of seq?
+        self.start = 0  # what should be the initial value of seq?
         self.end = 0
 
     def get(self, size: int) -> bytes:
