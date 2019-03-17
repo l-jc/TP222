@@ -15,7 +15,7 @@ MESSAGE = "Hello, World!"
 def main():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((TCP_IP, TCP_PORT))
-    s.send(MESSAGE)
+    s.send(MESSAGE.encode())
     data = s.recv(BUFFER_SIZE)
     s.close()
     # sock = RealTimeSocket.Dragon()
