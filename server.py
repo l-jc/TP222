@@ -19,14 +19,14 @@
 # sock.close()
 #
 
-import RealTimeSocket
+import dragon
 
 LOCALHOST = "127.0.0.1"
 MUMBAI = "13.233.94.35"
 
 
 def main():
-    sock = RealTimeSocket.Dragon()
+    sock = dragon.Dragon()
     ip, port = sock.accept()
 
     data = sock.recv(1024)

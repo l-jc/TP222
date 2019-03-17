@@ -1,7 +1,12 @@
 
 class DragonPacket:
-    def __int__(self):
+    flags = dict()
+
+    def __int__(self, payload):
         pass
+
+    def is_ack(self):
+        return self.flags['ack'] == 1
 
     def toBytes(self):
         """
