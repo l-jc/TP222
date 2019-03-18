@@ -1,38 +1,49 @@
 #!/usr/bin/env python
 # https://wiki.python.org/moin/TcpCommunication
 
-# import RealTimeSocket
 import socket
+import utils
+import time
+
+# iframe refreshes every 15 secs, pframe 0.1 sec
+CONST_iFrame_Ref = 15
+CONST_pFrame_Ref = 0.1
+# transmission lasts 10 mins
+CONST_Last_Time = 300
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 5005
-BUFFER_SIZE = 20  # Normally 1024, but we want fast response
-# LOCALHOST = "127.0.0.1"
-# MUMBAI = "13.233.94.35"
+BUFFER_SIZE = 1024
+MESSAGE = "Hello, World!"
 
-# def main():
-#     sock = RealTimeSocket.Dragon()
-#     ip, port = sock.accept()
-
-#     data = sock.recv(1024)
-
-#     print(data)
 def main():
+
+    startTime = time.time()
+    iLastTime = startTime
+    pLastTime = startTime
+    curTime = startTime
+
+    frameGen = utils.Generator()
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((TCP_IP, TCP_PORT))
-    s.listen(1)
-    conn, addr = s.accept()
-    # print 'Connection address:', addr
-    while 1:
-        data = conn.recv(BUFFER_SIZE)
-        if not data: break
-        print ("received data:", data  )  
-        conn.send(data)  # echo
-    conn.close()
+    s.connect((TCP_IP, TCP_PORT))
+    # s.send(MESSAGE.encode())
+    # data = s.recv(BUFFER_SIZE)
+    
+    s.send(frameGen.get_iframe().encode())
+    s.send(frameGen.get_pframe().encode())
 
+    while(pLastTime < startTime + CONST_Last_Time):
+        curTime = time.time()
+        if(curTime > iLastTime + CONST_iFrame_Ref):
+            s.send(frameGen.get_iframe().encode())
+            iLastTime = curTime
+        if(curTime > pLastTime + CONST_pFrame_Ref):
+            s.send(frameGen.get_pframe().encode())
+            pLastTime = curTime
 
-if __name__ == '__main__':
+    frameGen.store()
+    s.close()
+
+if __name__ == "__main__":
     main()
-
-
-
