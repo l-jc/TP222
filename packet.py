@@ -1,18 +1,20 @@
-
 class DragonPacket:
-    flags = dict()
+    flags = {
+        'ack': False,
+    }
+    seq = None
 
-    def __int__(self, payload):
+    def __int__(self):
         pass
 
     def is_ack(self):
-        return self.flags['ack'] == 1
+        return self.flags['ack'] is True
 
     def toBytes(self):
         """
         :return: the bytes format of the packet
         """
-        pass
+        return bytearray(b"fake packet")
 
     def parse(self, raw: bytes):
         """
@@ -21,4 +23,3 @@ class DragonPacket:
         :return:
         """
         pass
-

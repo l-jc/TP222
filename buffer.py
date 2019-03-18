@@ -1,4 +1,4 @@
-class Buffer:
+class Buffer(object):
     def __init__(self):
         # start and end seq number
         self.content = bytearray(0)
@@ -11,6 +11,9 @@ class Buffer:
         d = self.content[:size]
         self.content = self.content[size:]
         return d
+
+    def empty(self):
+        return len(self.content) == 0
 
 
 class SendBuffer(Buffer):
@@ -33,6 +36,9 @@ class RecvBuffer(Buffer):
         else:
             # drop
             pass
+
+    def whatever(self, data: bytes):
+        self.content += data
 
 
 class ShrimpBytes:
