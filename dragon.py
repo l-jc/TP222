@@ -1,7 +1,6 @@
 import socket
 from multiprocessing import Process, Manager
 from multiprocessing.managers import BaseManager
-from multiprocessing.sharedctypes import Value
 from buffer import SendBuffer, RecvBuffer
 from packet import DragonPacket
 
@@ -49,9 +48,7 @@ class Dragon:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         DragonManager.register('sbuffer', SendBuffer, exposed=None)
-        # DragonManager.register('sbuffer', SendBuffer, exposed=['get', 'push', 'empty'])
         DragonManager.register('rbuffer', RecvBuffer, exposed=None)
-        # DragonManager.register('rbuffer', RecvBuffer, exposed=['get', 'insert', 'empty'])
         self.manager = DragonManager()
         self.manager.start()
 
