@@ -1,3 +1,7 @@
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
+
+
 class Buffer(object):
     def __init__(self):
         # start and end seq number
@@ -5,15 +9,22 @@ class Buffer(object):
         self.start = 0  # what should be the initial value of seq?
         self.end = 0
 
-    def get(self, size: int) -> bytes:
+    def get(self, size: int):
         while len(self.content) == 0:
             pass
         d = self.content[:size]
         self.content = self.content[size:]
+        self.start = self.start + len(d)
         return d
 
-    def empty(self):
+    def get_seqno(self):
+        return self.start
+
+    def empty(self) -> bool:
         return len(self.content) == 0
+
+    def size(self):
+        return len(self.content)
 
 
 class SendBuffer(Buffer):
@@ -29,8 +40,8 @@ class RecvBuffer(Buffer):
         super(RecvBuffer, self).__init__()
 
     def insert(self, seq: int, data: bytes):
-        if seq >= self.end:
-            self.content += bytes(seq-self.end) + data
+        if seq >= self.start + len(self.content):
+            self.content += bytes(seq-self.start-self.size()) + data
         elif seq >= self.start:
             self.content[seq-self.start:seq-self.start+len(data)] = data
         else:

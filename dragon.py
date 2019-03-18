@@ -1,39 +1,100 @@
+# unreliable stream
+
 import socket
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Value, Event
 from multiprocessing.managers import BaseManager
 from buffer import SendBuffer, RecvBuffer
 from packet import DragonPacket
+import logging
 
 MAX_DRAGON_LENGTH = 2048
 MAX_DRAGON_PAYLOAD = 1280
+logging.basicConfig(level=logging.DEBUG)
 
 
-def sender(buffer, credit, sock, addr):
-    while True:
-        if not buffer.empty() and credit.value > 0:
-            d = buffer.get(MAX_DRAGON_PAYLOAD)
+class Sender(Process):
+    def __init__(self, sock, peer, buffer, credit: Value):
+        super(Sender, self).__init__()
+        self.sock = sock
+        self.peer = peer
+        self.buffer = buffer
+        self.credit = credit
+        self.sig = Event()
+
+    def stop(self):
+        self.sig.set()
+
+    def run(self):
+        while not self.sig.is_set():
+            if not self.buffer.empty() and self.credit.value > 0:
+                packet = DragonPacket()
+                packet.flags = {
+                    'ack': False,
+                    'syn': False,
+                    'fin': False,
+                    'cre': True,
+                    'fec': False,
+                }
+                packet.seqno = self.buffer.get_seqno()
+                data = self.buffer.get(MAX_DRAGON_PAYLOAD)
+                # logging.debug(f'SEND `{packet.tobytes(data)}`')
+                logging.debug(f'SEND\n{packet}')
+                self.sock.sendto(packet.tobytes(data), self.peer)
+        # clean
+        self.clean()
+
+    def clean(self):
+        while not self.buffer.empty():
             packet = DragonPacket()
-            sock.sendto(packet.toBytes(), addr)
+            packet.flags = {
+                'ack': False,
+                'syn': False,
+                'fin': False,
+                'cre': True,
+                'fec': False,
+            }
+            packet.seqno = self.buffer.get_seqno()
+            data = self.buffer.get(MAX_DRAGON_PAYLOAD)
+            self.sock.sendto(packet.tobytes(data), self.peer)
+        self.sock.close()
 
 
-def receiver(buffer, credit, sock, addr):
-    while True:
-        raw = sock.recv(MAX_DRAGON_LENGTH)
-        packet = DragonPacket()
-        # packet.parse(raw)
-        if packet.is_ack():
-            credit.value = packet.credit
-        else:
-            # buffer.insert(packet.seq, packet.payload)
-            buffer.whatever(raw)
+class Receiver(Process):
+    def __init__(self, sock, peer, buffer, credit: Value):
+        super(Receiver, self).__init__()
+        self.sock = sock
+        self.peer = peer
+        self.buffer = buffer
+        self.credit = credit
+        self.sig = Event()
+
+    def stop(self):
+        self.sig.set()
+
+    def run(self):
+        while not self.sig.is_set():
+            raw = self.sock.recv(MAX_DRAGON_LENGTH)
+            packet = DragonPacket()
+            packet.parse(raw)
+            logging.debug(f'RECEIVED\n{packet}')
+            if packet.is_ack():
+                self.credit.value = packet.credit
+            else:
+                ack = DragonPacket()
+                ack.credit = self.credit.value
+                ack.flags['ack'] = True
+                ack.ackno = packet.seqno + len(packet.payload)
+                self.sock.sendto(ack.tobytes(b''), self.peer)
+                self.buffer.insert(packet.seqno, packet.payload)
+        self.sock.close()
 
 
 class DragonManager(BaseManager):
     pass
 
 
-DragonManager.register('sbuffer', SendBuffer, exposed=['get', 'push'])
-DragonManager.register('rbuffer', RecvBuffer, exposed=['get', 'insert', 'whatever'])
+# DragonManager.register('sbuffer', SendBuffer, exposed=['get', 'push'])
+# DragonManager.register('rbuffer', RecvBuffer, exposed=['get', 'insert', 'whatever'])
 
 
 class Dragon:
@@ -43,20 +104,22 @@ class Dragon:
     def __init__(self, remote_ip, remote_port):
         self.remote_ip = remote_ip
         self.remote_port = remote_port
-        self.addr = (self.remote_ip, self.remote_port)
-        self.credit = Manager().Value('i', 1)
+        self.peer = (self.remote_ip, self.remote_port)
+        self.credit = Value('i', 1)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        DragonManager.register('sbuffer', SendBuffer, exposed=None)
-        DragonManager.register('rbuffer', RecvBuffer, exposed=None)
+        DragonManager.register('SendBuffer', SendBuffer, exposed=None)
+        DragonManager.register('RecvBuffer', RecvBuffer, exposed=None)
         self.manager = DragonManager()
         self.manager.start()
 
-        self.sbuffer = self.manager.sbuffer()
-        self.rbuffer = self.manager.rbuffer()
+        self.sender_buffer = self.manager.SendBuffer()
+        self.receiver_buffer = self.manager.RecvBuffer()
 
-        self.sender = Process(target=sender, args=(self.sbuffer, self.credit, self.sock, self.addr))
-        self.receiver = Process(target=receiver, args=(self.rbuffer, self.credit, self.sock, self.addr))
+        # self.sender = Process(target=sender, args=(self.sbuffer, self.credit, self.sock, self.addr))
+        self.sender = Sender(self.sock, self.peer, self.sender_buffer, self.credit)
+        # self.receiver = Process(target=receiver, args=(self.receiver_buffer, self.credit, self.sock, self.peer))
+        self.receiver = Receiver(self.sock, self.peer, self.receiver_buffer, self.credit)
         self.sender.start()
         self.receiver.start()
 
@@ -68,12 +131,13 @@ class Dragon:
         self.sock.bind(addr)
 
     def send(self, data: bytes):
-        self.sbuffer.push(data)
+        self.sender_buffer.push(data)
 
     def recv(self, size: int):
-        return self.rbuffer.get(size)
+        return bytes(self.receiver_buffer.get(size))
 
     def close(self):
-        self.sender.terminate()
+        self.sender.stop()
         self.receiver.terminate()
+        self.sock.close()
 
