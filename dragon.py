@@ -34,12 +34,14 @@ class Sender(Process):
                     'fin': False,
                     'cre': True,
                     'fec': False,
+                    'ooo': False,
                 }
                 packet.seqno = self.buffer.get_seqno()
                 data = self.buffer.get(MAX_DRAGON_PAYLOAD)
-                # logging.debug(f'SEND `{packet.tobytes(data)}`')
+                binary = packet.tobytes(data)
+                self.sock.sendto(binary, self.peer)
                 logging.debug(f'SEND\n{packet}')
-                self.sock.sendto(packet.tobytes(data), self.peer)
+
         # clean
         self.clean()
 
@@ -52,6 +54,7 @@ class Sender(Process):
                 'fin': False,
                 'cre': True,
                 'fec': False,
+                'ooo': False,
             }
             packet.seqno = self.buffer.get_seqno()
             data = self.buffer.get(MAX_DRAGON_PAYLOAD)
@@ -116,9 +119,7 @@ class Dragon:
         self.sender_buffer = self.manager.SendBuffer()
         self.receiver_buffer = self.manager.RecvBuffer()
 
-        # self.sender = Process(target=sender, args=(self.sbuffer, self.credit, self.sock, self.addr))
         self.sender = Sender(self.sock, self.peer, self.sender_buffer, self.credit)
-        # self.receiver = Process(target=receiver, args=(self.receiver_buffer, self.credit, self.sock, self.peer))
         self.receiver = Receiver(self.sock, self.peer, self.receiver_buffer, self.credit)
         self.sender.start()
         self.receiver.start()

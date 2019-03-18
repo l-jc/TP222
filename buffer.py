@@ -15,7 +15,7 @@ class Buffer(object):
         d = self.content[:size]
         self.content = self.content[size:]
         self.start = self.start + len(d)
-        return d
+        return bytes(d)
 
     def get_seqno(self):
         return self.start
@@ -38,6 +38,9 @@ class SendBuffer(Buffer):
 class RecvBuffer(Buffer):
     def __init__(self):
         super(RecvBuffer, self).__init__()
+
+    def get_start(self):
+        return self.start
 
     def insert(self, seq: int, data: bytes):
         if seq >= self.start + len(self.content):
