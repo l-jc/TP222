@@ -13,6 +13,7 @@ class Generator:
         self.pFrameList = []
         self.CONST_dtype = 'int64'
         self.CONST_pFrameSize = 153633
+        self.CONST_iFrameSize = 9830433
         self.pFrameShape = (80, 80, 3)
         self.iFrameShape = (640, 640, 3)
 
@@ -29,10 +30,10 @@ class Generator:
         return byteRes
 
     def byteToFrame(self,frameInput):
-        if sys.getsizeof(frameInput) <= self.CONST_pFrameSize:
-            res = np.frombuffer(frameInput,dtype=self.dtype).reshape(self.pFrameShape)
-        else:
-            res = np.frombuffer(frameInput,dtype=self.dtype).reshape(self.iFrameShape)
+        if sys.getsizeof(frameInput) == self.CONST_pFrameSize:
+            res = np.frombuffer(frameInput,dtype=self.CONST_dtype).reshape(self.pFrameShape)
+        elif sys.getsizeof(frameInput) == self.CONST_iFrameSize:
+            res = np.frombuffer(frameInput,dtype=self.CONST_dtype).reshape(self.iFrameShape)
         return res
     
     # # integer to byte
