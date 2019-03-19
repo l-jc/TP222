@@ -9,7 +9,8 @@ class ShrimpWindow():
         self.packets[expno] = packet
 
     def pop(self, expno):
-        self.packets.pop(expno)
+        if expno in self.packets:
+            self.packets.pop(expno)
 
     def size(self):
         return len(self.packets)
@@ -17,3 +18,6 @@ class ShrimpWindow():
     def items(self):
         return self.packets.items()
 
+    def get_min(self):
+        k = min(self.packets.keys())
+        return self.packets[k]
