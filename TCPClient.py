@@ -4,6 +4,7 @@
 import socket
 import utils
 import time
+import sys
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 5005
@@ -22,7 +23,8 @@ def main():
     while 1:
         data = conn.recv(BUFFER_SIZE)
         if not data: break
-        print ("received data:","iterations: ", itr)
+        print(len(data))
+        # print ("received data:",frameGen.byteToFrame(data),"iterations: ", itr)
         itr = itr + 1
         # frameGen.byteToFrame(data)) 
         # conn.send(data)  # echo

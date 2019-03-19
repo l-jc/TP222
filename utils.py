@@ -30,6 +30,7 @@ class Generator:
         return byteRes
 
     def byteToFrame(self,frameInput):
+        res = ''
         if sys.getsizeof(frameInput) == self.CONST_pFrameSize:
             res = np.frombuffer(frameInput,dtype=self.CONST_dtype).reshape(self.pFrameShape)
         elif sys.getsizeof(frameInput) == self.CONST_iFrameSize:
