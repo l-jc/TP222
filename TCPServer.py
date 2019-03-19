@@ -30,15 +30,15 @@ def main():
     # s.send(MESSAGE.encode())
     # data = s.recv(BUFFER_SIZE)
     
-    s.send(frameGen.get_iframe().encode())
-    s.send(frameGen.get_pframe().encode())
+    s.send(frameGen.get_iframe())
+    s.send(frameGen.get_pframe())
 
     while(pLastTime < startTime + CONST_Last_Time):
         curTime = time.time()
         if(curTime > iLastTime + CONST_iFrame_Ref):
             s.send(frameGen.get_iframe().encode())
             iLastTime = curTime
-        if(curTime > pLastTime + CONST_pFrame_Ref):
+        elif(curTime > pLastTime + CONST_pFrame_Ref):
             s.send(frameGen.get_pframe().encode())
             pLastTime = curTime
 
