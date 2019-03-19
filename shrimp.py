@@ -1,15 +1,20 @@
 # reliable stream
+#
 import logging
+import random
 import socket
 from multiprocessing import Process, Value, Event
 from multiprocessing.managers import BaseManager
 from buffer import SendBuffer, RecvBuffer
 from packet import DragonPacket
 from window import ShrimpWindow
+from resetable import RepeatedTask
 
 MAX_DRAGON_LENGTH = 2048
 MAX_DRAGON_PAYLOAD = 1280
 logging.basicConfig(level=logging.DEBUG)
+
+TEST = True
 
 
 class Sender(Process):
@@ -43,9 +48,16 @@ class Sender(Process):
                 packet.populate(data)
                 binary = packet.tobytes()
                 self.window.put(packet.seqno + len(data), binary)
-                self.sock.sendto(binary, self.peer)
-                logging.debug(f'SEND {packet}')
-                logging.debug(f'SEND binary : {binary}')
+                if TEST:
+                    if random.random() < 0.7:
+                        logging.debug(f'simulate drop')
+                        pass
+                    else:
+                        self.sock.sendto(binary, self.peer)
+                else:
+                    self.sock.sendto(binary, self.peer)
+                    logging.debug(f'SEND {packet}')
+                    logging.debug(f'SEND binary : {binary}')
         # clean
         self.clean()
 
@@ -56,7 +68,7 @@ class Sender(Process):
 
 
 class Receiver(Process):
-    def __init__(self, sock, peer, buffer, window, wndsize):
+    def __init__(self, sock, peer, buffer, window, wndsize, control):
         super(Receiver, self).__init__()
         self.sock = sock
         self.peer = peer
@@ -64,6 +76,7 @@ class Receiver(Process):
         self.sig = Event()
         self.window = window
         self.wndsize = wndsize
+        self.control = control
 
     def stop(self):
         self.sig.set()
@@ -77,6 +90,7 @@ class Receiver(Process):
             logging.debug(f'RECEIVED binary : {raw}')
             if packet.is_ack():
                 # to do: set window size
+                self.control.set()
                 acked = packet.ackno
                 self.window.pop(acked)
                 if packet.flags['ooo']:
@@ -111,6 +125,7 @@ class Shrimp:
         self.remote_port = remote_port
         self.peer = (self.remote_ip, self.remote_port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.timeout = 0.1  # 100 ms
 
         ShrimpManager.register('SendBuffer', SendBuffer, exposed=None)
         ShrimpManager.register('RecvBuffer', RecvBuffer, exposed=None)
@@ -121,11 +136,19 @@ class Shrimp:
         self.sender_buffer = self.manager.SendBuffer()
         self.receiver_buffer = self.manager.RecvBuffer()
         self.window = self.manager.ShrimpWindow()
+        self.resender = RepeatedTask(self.timeout, self.resend)
 
         self.sender = Sender(self.sock, self.peer, self.sender_buffer, self.window, self.wndsize)
-        self.receiver = Receiver(self.sock, self.peer, self.receiver_buffer, self.window, self.wndsize)
+        self.receiver = Receiver(self.sock, self.peer, self.receiver_buffer, self.window, self.wndsize, self.resender.rtimer.reset)
         self.sender.start()
         self.receiver.start()
+        self.resender.start()
+
+    def resend(self):
+        if self.window.size() > 0:
+            binary = self.window.get_min()
+            self.sock.sendto(binary, self.peer)
+            logging.debug(f'resend')
 
     def connect(self):
         pass
@@ -143,4 +166,5 @@ class Shrimp:
     def close(self):
         self.sender.stop()
         self.receiver.terminate()
+        self.resender.stop()
         self.sock.close()
