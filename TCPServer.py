@@ -47,7 +47,7 @@ def main():
     frameGen.store()
     s.close()
     duration = time.time() - startTime
-    print("Minutes: ", duration/60, "Seconds: ", duration%60)
+    print("Minutes: ", int(duration/60), "Seconds: ", duration%60)
 
 if __name__ == "__main__":
     main()

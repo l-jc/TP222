@@ -27,7 +27,7 @@ def main():
         # frameGen.byteToFrame(data)) 
         # conn.send(data)  # echo
     duration = time.time() - startTime
-    print("Minutes: ", duration/60, "Seconds: ", duration%60)
+    # print("Minutes: ", int(duration/60), "Seconds: ", duration%60)
     conn.close()
 
 if __name__ == '__main__':
