@@ -17,6 +17,12 @@ class Buffer(object):
         self.start = self.start + len(d)
         return bytes(d)
 
+    def get_copy(self, size: int):
+        while len(self.content) == 0:
+            pass
+        d = self.content[:size]
+        return bytes(d)
+
     def get_seqno(self):
         return self.start
 

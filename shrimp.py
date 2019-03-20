@@ -10,11 +10,11 @@ from packet import DragonPacket
 from window import ShrimpWindow
 from resetable import RepeatedTask
 
-MAX_DRAGON_LENGTH = 2048
-MAX_DRAGON_PAYLOAD = 1280
-logging.basicConfig(level=logging.DEBUG)
+MAX_DRAGON_LENGTH = 1500
+MAX_DRAGON_PAYLOAD = 1480
+logging.basicConfig(level=logging.INFO)
 
-TEST = True
+TEST = 0
 
 
 class Sender(Process):
@@ -57,7 +57,7 @@ class Sender(Process):
                 else:
                     self.sock.sendto(binary, self.peer)
                     logging.debug(f'SEND {packet}')
-                    logging.debug(f'SEND binary : {binary}')
+                    # logging.debug(f'SEND binary : {binary}')
         # clean
         self.clean()
 
@@ -87,7 +87,7 @@ class Receiver(Process):
             packet = DragonPacket()
             packet.parse(raw)
             logging.debug(f'RECEIVED {packet}')
-            logging.debug(f'RECEIVED binary : {raw}')
+            # logging.debug(f'RECEIVED binary : {raw}')
             if packet.is_ack():
                 # to do: set window size
                 self.control.set()
@@ -125,7 +125,7 @@ class Shrimp:
         self.remote_port = remote_port
         self.peer = (self.remote_ip, self.remote_port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.timeout = 0.1  # 100 ms
+        self.timeout = 0.1  # 500 ms
 
         ShrimpManager.register('SendBuffer', SendBuffer, exposed=None)
         ShrimpManager.register('RecvBuffer', RecvBuffer, exposed=None)
@@ -159,9 +159,12 @@ class Shrimp:
 
     def send(self, data: bytes):
         self.sender_buffer.push(data)
+        while not self.sender_buffer.empty() and self.window.size() > 0:
+            pass
+        return
 
     def recv(self, size: int):
-        return bytes(self.receiver_buffer.get(size))
+        return bytes(self.receiver_buffer.get_copy(size))
 
     def close(self):
         self.sender.stop()

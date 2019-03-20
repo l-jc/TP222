@@ -1,5 +1,5 @@
 # unreliable stream
-
+# TODO: tear down connection
 import socket
 from multiprocessing import Process, Value, Event
 from multiprocessing.managers import BaseManager
@@ -7,9 +7,9 @@ from buffer import SendBuffer, RecvBuffer
 from packet import DragonPacket
 import logging
 
-MAX_DRAGON_LENGTH = 2048
-MAX_DRAGON_PAYLOAD = 1280
-logging.basicConfig(level=logging.DEBUG)
+MAX_DRAGON_LENGTH = 1500
+MAX_DRAGON_PAYLOAD = 1480
+logging.basicConfig(level=logging.INFO)
 
 
 class Sender(Process):
@@ -38,7 +38,8 @@ class Sender(Process):
                 }
                 packet.seqno = self.buffer.get_seqno()
                 data = self.buffer.get(MAX_DRAGON_PAYLOAD)
-                binary = packet.tobytes(data)
+                packet.populate(data)
+                binary = packet.tobytes()
                 self.sock.sendto(binary, self.peer)
                 logging.debug(f'SEND\n{packet}')
 
@@ -58,7 +59,8 @@ class Sender(Process):
             }
             packet.seqno = self.buffer.get_seqno()
             data = self.buffer.get(MAX_DRAGON_PAYLOAD)
-            self.sock.sendto(packet.tobytes(data), self.peer)
+            packet.populate(data)
+            self.sock.sendto(packet.tobytes(), self.peer)
         self.sock.close()
 
 
@@ -87,7 +89,7 @@ class Receiver(Process):
                 ack.credit = self.credit.value
                 ack.flags['ack'] = True
                 ack.ackno = packet.seqno + len(packet.payload)
-                self.sock.sendto(ack.tobytes(b''), self.peer)
+                self.sock.sendto(ack.tobytes(), self.peer)
                 self.buffer.insert(packet.seqno, packet.payload)
         self.sock.close()
 

@@ -1,38 +1,23 @@
-# import socket
-
-# HOST = ""
-# PORT = 65001
-#
-# sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# sock.bind((HOST, PORT))
-#
-# content = b""
-#
-# try:
-#     while True:
-#         data, addr = sock.recvfrom(4096)
-#         content += data
-#         print(data[:2])
-# except KeyboardInterrupt:
-#     open("receive.txt", 'wb').write(content)
-#
-# sock.close()
-#
-
-import dragon
-
-LOCALHOST = "127.0.0.1"
-MUMBAI = "13.233.94.35"
+from dragon import Dragon
+import time
+from utils import Generator
 
 
 def main():
-    sock = dragon.Dragon()
-    ip, port = sock.accept()
+    sock = Dragon('localhost', 7000)
 
-    data = sock.recv(1024)
+    generator = Generator()
+    fake_frame = bytearray(614400)
+    sock.bind(('', 6000))
+    sock.send(fake_frame)
 
-    print(data)
+    open("dragon_send_frame","wb").write(fake_frame)
+
+    print(f"CLEAN")
+    time.sleep(3)
+    sock.close()
 
 
 if __name__ == '__main__':
     main()
+
