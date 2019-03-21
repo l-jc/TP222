@@ -1,12 +1,15 @@
 from dragon import Dragon
 import time
-from utils import Generator
+# from utils import Generator
+
+CLIENT = "34.210.120.119"
+CPORT = 7000
 
 
 def main():
-    sock = Dragon('localhost', 7000)
+    sock = Dragon(CLIENT, CPORT)
 
-    generator = Generator()
+    # generator = Generator()
     fake_frame = bytearray(614400)
     sock.bind(('', 6000))
     sock.send(fake_frame)
