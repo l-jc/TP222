@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# https://wiki.python.org/moin/TcpCommunication
+# TCP client
 
 import socket
 import utils

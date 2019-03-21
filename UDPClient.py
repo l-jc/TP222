@@ -1,4 +1,4 @@
-# https://wiki.python.org/moin/UdpCommunication
+# UDP client
 import socket
 import utils
 
