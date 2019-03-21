@@ -38,7 +38,6 @@ class Generator:
         return res
     
     # # integer to byte
-    # # https://www.devdungeon.com/content/working-binary-data-python#int-to-bytes
     # def conv2Bytes(self, frame):
     #     res = b''
     #     for i in frame:

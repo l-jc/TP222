@@ -1,4 +1,4 @@
-# https://wiki.python.org/moin/UdpCommunication\
+# UDP server
 import socket
 # import RealTimeSocket
 # LOCALHOST = "127.0.0.1"
