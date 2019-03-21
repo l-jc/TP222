@@ -86,5 +86,5 @@ class DragonPacket:
         return f"seqno: {self.seqno} " \
             f"ackno: {self.ackno} " \
             f"ack_f: {self.flags['ack']} " \
-            f"payload: {self.payload}"
+            f"len payload: {len(self.payload)}"
 

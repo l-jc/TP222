@@ -12,7 +12,7 @@ from resetable import RepeatedTask
 
 MAX_DRAGON_LENGTH = 1500
 MAX_DRAGON_PAYLOAD = 1480
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 TEST = 0
 
@@ -146,6 +146,7 @@ class Shrimp:
 
     def resend(self):
         if self.window.size() > 0:
+            logging.debug(f"RESEND")
             binary = self.window.get_min()
             self.sock.sendto(binary, self.peer)
             logging.debug(f'resend')
