@@ -120,12 +120,12 @@ class Shrimp:
     accept_host = None
 
     def __init__(self, remote_ip, remote_port):
-        self.wndsize = Value('i', 100)
+        self.wndsize = Value('i', 500)
         self.remote_ip = remote_ip
         self.remote_port = remote_port
         self.peer = (self.remote_ip, self.remote_port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.timeout = 0.1  # 500 ms
+        self.timeout = 0.2  # 500 ms
 
         ShrimpManager.register('SendBuffer', SendBuffer, exposed=None)
         ShrimpManager.register('RecvBuffer', RecvBuffer, exposed=None)

@@ -2,7 +2,7 @@ from dragon import Dragon
 
 
 def main():
-    sock = Dragon('localhost', 6000)
+    sock = Dragon('52.79.237.101', 6000)
     sock.bind(('', 7000))
 
     data = b''

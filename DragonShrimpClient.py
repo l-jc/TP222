@@ -3,8 +3,8 @@ import time
 
 
 def main():
-    sock = Shrimp('localhost', 7000)
-    sock.bind(('', 6000))
+    sock = Shrimp('52.79.237.101', 6000)
+    sock.bind(('', 7000))
     last_time = 0
     while True:
         data = sock.recv(921600)
