@@ -11,11 +11,11 @@ def main():
     sock.listen(1)
 
     conn, addr = sock.accept()
-    fake_frame = bytearray(921600)
+    fake_frame = bytearray(491520)
+    print(time.time())
     conn.send(fake_frame)
 
     conn.close()
-    print(time.time())
 
 if __name__ == "__main__":
     main()

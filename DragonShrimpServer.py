@@ -11,7 +11,7 @@ def main():
     sock = Shrimp(CLIENT, CPORT)
     sock.bind(('', 6000))
 
-    fake_frame = bytearray(491520)
+    fake_frame = bytearray(921600)
 
     t = time.time()
     sock.send(fake_frame)
