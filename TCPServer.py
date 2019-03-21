@@ -9,7 +9,7 @@ import time
 CONST_iFrame_Ref = 15
 CONST_pFrame_Ref = 0.1
 # transmission lasts 10 mins
-CONST_Last_Time = 60
+CONST_Last_Time = 300
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 5005
@@ -30,24 +30,20 @@ def main():
     # s.send(MESSAGE.encode())
     # data = s.recv(BUFFER_SIZE)
     
-    s.send(frameGen.get_iframe())
-    s.send(frameGen.get_pframe())
+    s.send(frameGen.get_iframe().encode())
+    s.send(frameGen.get_pframe().encode())
 
     while(pLastTime < startTime + CONST_Last_Time):
         curTime = time.time()
-        duration = time.time() - startTime
-        # print("Minutes: ", duration/60, "Seconds: ", duration%60)
         if(curTime > iLastTime + CONST_iFrame_Ref):
-            s.send(frameGen.get_iframe())
+            s.send(frameGen.get_iframe().encode())
             iLastTime = curTime
-        elif(curTime > pLastTime + CONST_pFrame_Ref):
-            s.send(frameGen.get_pframe())
+        if(curTime > pLastTime + CONST_pFrame_Ref):
+            s.send(frameGen.get_pframe().encode())
             pLastTime = curTime
 
     frameGen.store()
     s.close()
-    duration = time.time() - startTime
-    print("Minutes: ", int(duration/60), "Seconds: ", duration%60)
 
 if __name__ == "__main__":
     main()

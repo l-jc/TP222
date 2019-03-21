@@ -25,7 +25,7 @@ class DragonPacket:
     headerlen = 12
     wndsize = 100
     credit = 0
-    payload = None
+    payload = b''
 
     def __int__(self):
         pass

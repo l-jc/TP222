@@ -1,27 +1,23 @@
-# import socket
-#
-# sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#
-# with open("sample.txt", "rb") as f:
-#     content = f.read(2048)
-#     while content:
-#         sock.sendto(content, ("127.0.0.1", 65001))
-#         content = f.read(2048)
-#
-# sock.close()
-
-
-import dragon
-
-LOCALHOST = "127.0.0.1"
-MUMBAI = "13.233.94.35"
+from dragon import Dragon
 
 
 def main():
-    sock = dragon.Dragon()
-    sock.connect((MUMBAI, 6000))
+    sock = Dragon('localhost', 6000)
+    sock.bind(('', 7000))
 
-    sock.send(b'Hello world!')
+    data = b''
+
+    while True:
+        try:
+            tmp = sock.recv(1500)
+        except KeyboardInterrupt:
+            open("dragon_recv_frame", "wb").write(data)
+            break
+        if not tmp:
+            break
+        data += tmp
+
+    # sock.send(b'Hello world!')
 
     sock.close()
 
