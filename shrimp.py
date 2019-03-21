@@ -92,7 +92,7 @@ class Receiver(Process):
             # logging.debug(f'RECEIVED binary : {raw}')
             if packet.is_ack():
                 # to do: set window size
-                self.control.set()
+                # self.control.set()
                 acked = packet.ackno
                 self.window.pop(acked)
                 if packet.flags['ooo']:
@@ -100,6 +100,7 @@ class Receiver(Process):
                     for (expno, packetbytes) in self.window.items():
                         if expno < acked:
                             self.sock.sendto(packetbytes, self.peer)
+                            logging.debug(f"RESEND OUT OF ORDER")
             else:
                 ack = DragonPacket()
                 # to do: set window size
@@ -151,7 +152,7 @@ class Shrimp:
     def resend(self):
         if self.window.size() > 0:
             logging.debug(f"RESEND")
-            binary = self.window.get_min()
+            binary = self.window.get_random()
             self.sock.sendto(binary, self.peer)
             logging.debug(f'resend')
 

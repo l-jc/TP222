@@ -21,3 +21,8 @@ class ShrimpWindow():
     def get_min(self):
         k = min(self.packets.keys())
         return self.packets[k]
+
+    def get_random(self):
+        r = self.packets.popitem()
+        self.packets[r[0]] = r[1]
+        return r[1]
