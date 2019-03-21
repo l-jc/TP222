@@ -1,8 +1,11 @@
 from dragon import Dragon
 
 
+SERVER = "52.79.237.101"
+
+
 def main():
-    sock = Dragon('localhost', 6000)
+    sock = Dragon(SERVER, 6000)
     sock.bind(('', 7000))
 
     data = b''

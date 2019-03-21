@@ -13,7 +13,7 @@ BUFFER_SIZE = 1024  # Normally 1024, but we want fast response
 def main():
     startTime = time.time()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((TCP_IP, TCP_PORT))
+    s.bind((TCP_IP, TCP_PORT)
     s.listen(1)
     conn, addr = s.accept()
 

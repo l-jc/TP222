@@ -9,12 +9,14 @@ from buffer import SendBuffer, RecvBuffer
 from packet import DragonPacket
 from window import ShrimpWindow
 from resetable import RepeatedTask
+import time
 
 MAX_DRAGON_LENGTH = 1500
 MAX_DRAGON_PAYLOAD = 1480
 logging.basicConfig(level=logging.DEBUG)
 
-TEST = 0
+DROP_RATE = 0
+TEST = 1
 
 
 class Sender(Process):
@@ -33,6 +35,8 @@ class Sender(Process):
     def run(self):
         while not self.sig.is_set():
             if not self.buffer.empty() and self.window.size() < self.wndsize.value:
+                if TEST:
+                    start = time.time()
                 packet = DragonPacket()
                 packet.flags = {
                     'ack': False,
@@ -49,15 +53,11 @@ class Sender(Process):
                 binary = packet.tobytes()
                 self.window.put(packet.seqno + len(data), binary)
                 if TEST:
-                    if random.random() < 0.7:
-                        logging.debug(f'simulate drop')
-                        pass
-                    else:
-                        self.sock.sendto(binary, self.peer)
-                else:
-                    self.sock.sendto(binary, self.peer)
-                    logging.debug(f'SEND {packet}')
-                    # logging.debug(f'SEND binary : {binary}')
+                    print(f"prepare packet: {time.time() - start}")
+
+                self.sock.sendto(binary, self.peer)
+                logging.debug(f'SEND {packet}')
+                # logging.debug(f'SEND binary : {binary}')
         # clean
         self.clean()
 
@@ -84,6 +84,8 @@ class Receiver(Process):
     def run(self):
         while not self.sig.is_set():
             raw = self.sock.recv(MAX_DRAGON_LENGTH)
+            if TEST:
+                start = time.time()
             packet = DragonPacket()
             packet.parse(raw)
             logging.debug(f'RECEIVED {packet}')
@@ -108,6 +110,8 @@ class Receiver(Process):
                 ack.populate(b'')
                 self.sock.sendto(ack.tobytes(), self.peer)
                 self.buffer.insert(packet.seqno, packet.payload)
+            if TEST:
+                print(f"parse packet: {time.time() - start}")
         self.sock.close()
 
 
@@ -125,7 +129,7 @@ class Shrimp:
         self.remote_port = remote_port
         self.peer = (self.remote_ip, self.remote_port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.timeout = 0.2  # 500 ms
+        self.timeout = 0.15  # 500 ms
 
         ShrimpManager.register('SendBuffer', SendBuffer, exposed=None)
         ShrimpManager.register('RecvBuffer', RecvBuffer, exposed=None)
